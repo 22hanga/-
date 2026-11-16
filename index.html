@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>설정</title>
+<meta name="apple-mobile-web-app-title" content="설정"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#000000"/>
+<style>
+:root {
+  --bg: #000000;
+  --card-bg: #1c1c1e;
+  --card-sub: #2c2c2e;
+  --text: #ffffff;
+  --text-muted: #8e8e93;
+  --line: #38383a;
+  --blue: #0a84ff;
+  --green: #30d158;
+  --red: #ff453a;
+  --orange: #ff9f0a;
+  --indigo: #5e5ce6;
+  --purple: #af52de;
+  --teal: #64d2ff;
+  --pink: #ff2d55;
+  --gray: #8e8e93;
+  --radius: 12px;
+  --safe-top: env(safe-area-inset-top, 47px);
+  --safe-bottom: env(safe-area-inset-bottom, 34px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-x: hidden;
+}
+
+.app-container {
+  max-width: 430px;
+  min-height: 100vh;
+  margin: 0 auto;
+  position: relative;
+  background: var(--bg);
+  padding-top: var(--safe-top);
+  padding-bottom: calc(var(--safe-bottom) + 20px);
+}
+
+/* Status Bar */
+.status-bar {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  height: var(--safe-top);
+  display: flex; justify-content: space-between; align-items: flex-end;
+  padding: 0 24px 10px;
+  z-index: 1000;
+  font-weight: 600; font-size: 15px;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.status-right { display: flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; }
+.battery-icon {
+  width: 25px; height: 12px; border: 1px solid #fff; border-radius: 4px; padding: 1px; position: relative; display: flex; align-items: center;
+}
+.battery-icon::after {
+  content:''; position: absolute; right: -3.5px; top: 3px; width: 2px; height: 4px; background: #fff; border-radius: 0 1px 1px 0;
+}
+.battery-fill { width: 46%; height: 100%; background: #fff; border-radius: 2px; transition: width 0.3s, background 0.3s; }
+.battery-fill.low-power { background: var(--orange) !important; width: 100% !important; }
+
+/* Dynamic Island Mockup */
+.dynamic-island {
+  width: 120px; height: 32px; background: #000; border-radius: 20px;
+  position: absolute; left: 50%; transform: translateX(-50%); top: 8px;
+  display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;
+}
+.di-camera { width: 10px; height: 10px; background: #111; border-radius: 50%; border: 1px solid #222; }
+
+/* Screen Base */
+.screen {
+  display: none;
+  padding: 8px 16px 30px;
+  animation: slideIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.screen.active { display: block; }
+
+@keyframes slideIn {
+  from { opacity: 0.8; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Nav Header */
+.top-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 44px; margin-bottom: 8px; position: sticky; top: var(--safe-top);
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  z-index: 900; margin-left: -16px; margin-right: -16px; padding: 0 16px;
+}
+.back-btn {
+  display: flex; align-items: center; color: var(--blue); font-size: 17px;
+  cursor: pointer; background: none; border: 0; padding: 0; font-weight: 400;
+}
+.back-btn svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; margin-right: 2px; }
+.nav-title { font-size: 17px; font-weight: 600; text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-action { font-size: 17px; color: var(--blue); background: none; border: 0; cursor: pointer; padding: 0; }
+
+.large-title {
+  font-size: 34px; font-weight: 700; margin: 6px 0 14px; letter-spacing: -0.5px;
+}
+
+/* Groups & Rows */
+.group {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.group-title {
+  font-size: 13px; color: var(--text-muted); text-transform: uppercase; margin: 0 16px 6px; padding-top: 4px; font-weight: 400;
+}
+.group-footer {
+  font-size: 13px; color: var(--text-muted); margin: 6px 16px 16px; line-height: 1.4;
+}
+
+.row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; min-height: 46px; position: relative; cursor: pointer; font-size: 17px;
+}
+.row:active { background: var(--card-sub); }
+.row:not(:last-child)::after {
+  content: ''; position: absolute; bottom: 0; left: 58px; right: 0; height: 0.5px; background: var(--line);
+}
+.row.no-icon:not(:last-child)::after { left: 16px; }
+
+.row-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.row-icon {
+  width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0; font-size: 16px;
+}
+.row-icon svg { width: 18px; height: 18px; fill: currentColor; }
+
+.row-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.row-title { font-size: 17px; font-weight: 400; color: var(--text); }
+.row-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.row-right { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 16px; }
+.badge {
+  background: var(--red); color: #fff; border-radius: 50%;
+  width: 20px; height: 20px; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+}
+.chevron { width: 8px; height: 13px; stroke: #545458; stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Switch Toggle */
+.switch {
+  width: 51px; height: 31px; background: #39393d; border-radius: 16px;
+  position: relative; transition: background 0.25s; cursor: pointer; flex-shrink: 0;
+}
+.switch::after {
+  content: ''; width: 27px; height: 27px; background: #fff; border-radius: 50%;
+  position: absolute; top: 2px; left: 2px; transition: transform 0.25s;
+  box-shadow: 0 3px 7px rgba(0,0,0,0.3);
+}
+.switch.on { background: var(--green); }
+.switch.on::after { transform: translateX(20px); }
+
+/* Profile Row */
+.profile-card { display: flex; align-items: center; padding: 12px 16px; gap: 14px; }
+.avatar {
+  width: 60px; height: 60px; border-radius: 50%; background: #555; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.avatar svg { width: 42px; height: 42px; fill: #aaa; }
+.profile-info { flex: 1; }
+.profile-name { font-size: 20px; font-weight: 600; }
+.profile-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+/* Search Bar */
+.search-box {
+  background: var(--card-bg); border-radius: 10px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 17px; margin-bottom: 16px;
+}
+.search-box svg { width: 16px; height: 16px; fill: currentColor; }
+
+/* Battery Specific UI */
+.battery-val-box { padding: 16px; display: flex; justify-content: space-between; align-items: flex-start; }
+.battery-pct-big { font-size: 42px; font-weight: 700; letter-spacing: -1px; }
+.battery-last-charge { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.info-circle {
+  width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--text-muted);
+  color: var(--text-muted); font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600;
+}
+
+.chart-card { padding: 16px; }
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.chart-main-title { font-size: 13px; color: var(--text-muted); }
+.chart-sub-note { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+
+.bar-chart {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  height: 120px; padding-top: 15px; border-bottom: 0.5px solid var(--line); position: relative;
+}
+.chart-avg-line {
+  position: absolute; left: 0; right: 0; top: 35px; border-top: 1px dashed #545458;
+}
+.chart-avg-label {
+  position: absolute; right: 0; top: 22px; font-size: 10px; color: var(--text-muted);
+}
+.bar-col {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; cursor: pointer; z-index: 2;
+}
+.bar-wrap {
+  width: 18px; height: 90px; background: #2c2c2e; border-radius: 4px; display: flex; align-items: flex-end; overflow: hidden;
+}
+.bar-fill { width: 100%; background: var(--green); border-radius: 4px; transition: height 0.3s; }
+.bar-fill.blue { background: var(--blue); }
+.bar-fill.orange { background: var(--orange); }
+.bar-col.selected .bar-wrap { outline: 2px solid var(--blue); }
+.bar-col.selected .bar-label { color: #fff; font-weight: 700; }
+.bar-label { font-size: 11px; color: var(--text-muted); }
+
+/* App Battery Usage List */
+.app-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; }
+.app-item:not(:last-child) { border-bottom: 0.5px solid var(--line); }
+.app-icon {
+  width: 32px; height: 32px; border-radius: 8px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; font-weight: bold; flex-shrink: 0;
+}
+.app-info { flex: 1; margin-left: 12px; }
+.app-name { font-size: 16px; font-weight: 400; }
+.app-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.app-pct { font-size: 15px; color: var(--text-muted); font-weight: 500; }
+.app-pct.warning { color: var(--orange); }
+
+/* Modal Bottom Sheet */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000;
+  display: none; align-items: flex-end; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-card {
+  width: 100%; max-width: 430px; background: #1c1c1e; border-radius: 16px 16px 0 0;
+  padding: 20px; animation: slideUp 0.25s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; font-size: 17px; }
+.modal-btn { color: var(--blue); background: none; border: 0; font-size: 17px; cursor: pointer; }
+.modal-input {
+  width: 100%; background: #2c2c2e; border: 0; border-radius: 10px; color: #fff;
+  padding: 12px; font-size: 16px; outline: none; margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>20:16</span>
+    <div class="dynamic-island"><div class="di-camera"></div></div>
+    <div class="status-right">
+      <span>LTE</span>
+      <div class="battery-icon"><div class="battery-fill" id="status-battery-fill"></div></div>
+      <span style="font-size:12px;" id="status-battery-pct">46</span>
+    </div>
+  </div>
+
+  <!-- 1. MAIN SETTINGS SCREEN -->
+  <main class="screen active" id="screen-home">
+    <div class="large-title">설정</div>
+
+    <div class="group" onclick="navTo('screen-apple-id')">
+      <div class="profile-card">
+        <div class="avatar">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+        <div class="profile-info">
+          <div class="profile-name">정재석</div>
+          <div class="profile-sub">Apple 계정, iCloud 등</div>
+        </div>
+        <svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row row-full">
+        <div class="row-left"><span class="row-title">Apple 계정 제안</span></div>
+        <div class="row-right">
+          <span class="badge">2</span>
+          <svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row row-full">
+        <div class="row-left"><span class="row-title">구입에 포함된 서비스</span></div>
+        <div class="row-right">
+          <span class="badge">1</span>
+          <svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--orange);">
+            <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+          </div>
+          <span class="row-title">에어플레인 모드</span>
+        </div>
+        <div class="switch" id="sw-airplane" onclick="toggleSwitch(this, event)"></div>
+      </div>
+      <div class="row" onclick="navTo('screen-wifi')">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--blue);">
+            <svg viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/></svg>
+          </div>
+          <span class="row-title">Wi-Fi</span>
+        </div>
+        <div class="row-right">
+          <span id="home-wifi-status">연결 안 됨</span>
+          <svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--blue);">
+            <svg viewBox="0 0 24 24"><path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg>
+          </div>
+          <span class="row-title">Bluetooth</span>
+        </div>
+        <div class="row-right">
+          <span>켜짐</span>
+          <svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg>
+        </div>
+      </div>
+      <div class="row" onclick="navTo('screen-cellular')">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--green);">
+            <svg viewBox="0 0 24 24"><path d="M17 4h3v16h-3zM12 8h3v12h-3zM7 12h3v8H7zM2 16h3v4H2z"/></svg>
+          </div>
+          <span class="row-title">셀룰러</span>
+        </div>
+        <div class="row-right">
+          <svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg>
+        </div>
+      </div>
+      <div class="row" onclick="navTo('screen-hotspot')">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--green);">
+            <svg viewBox="0 0 24 24"><path d="M12 11c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 2c0-3.31-2.69-6-6-6s-6 2.69-6 6c0 2.22 1.21 4.15 3 5.19l1-1.74c-1.19-.7-2-1.97-2-3.45 0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.48-.81 2.75-2 3.45l1 1.74c1.79-1.04 3-2.97 3-5.19z"/></svg>
+          </div>
+          <span class="row-title">개인용 핫스팟</span>
+        </div>
+        <div class="row-right">
+          <span id="home-hotspot-status">끔</span>
+          <svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg>
+        </div>
+      </div>
+      <div class="row" onclick="navTo('screen-battery')">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--green);">
+            <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+          </div>
+          <span class="row-title">배터리</span>
+        </div>
+        <div class="row-right">
+          <svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--gray);">⚙</div>
+          <span class="row-title">일반</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--blue);">♿</div>
+          <span class="row-title">손쉬운 사용</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--blue);">☀</div>
+          <span class="row-title">디스플레이 및 밝기</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--teal);">🖼</div>
+          <span class="row-title">배경화면</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:#000; border: 1px solid #333;">📱</div>
+          <span class="row-title">스탠바이</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--red);">🔔</div>
+          <span class="row-title">알림</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--pink);">🔊</div>
+          <span class="row-title">사운드 및 햅틱</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--indigo);">🌙</div>
+          <span class="row-title">집중 모드</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon" style="background:var(--indigo);">⏳</div>
+          <span class="row-title">스크린 타임</span>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <span>검색</span>
+    </div>
+  </main>
+
+  <!-- 2. APPLE ACCOUNT SCREEN -->
+  <main class="screen" id="screen-apple-id">
+    <div class="top-nav">
+      <button class="back-btn" onclick="navBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> 설정</button>
+      <div class="nav-title">Apple 계정</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div style="text-align:center; padding: 16px 0 24px;">
+      <div class="avatar" style="width:80px; height:80px; margin:0 auto 12px;">
+        <svg viewBox="0 0 24 24" width="56" height="56"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>
+      <div style="font-size:22px; font-weight:700;">정재석</div>
+      <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Apple 계정, iCloud 등</div>
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">개인정보</span>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">로그인 및 보안</span>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">결제 및 배송</span>
+        <div class="row-right"><span>카카오페이</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">구독</span>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">iCloud</span>
+        <div class="row-right"><span>5GB</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">가족</span>
+        <div class="row-right"><span>설정</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">나의 찾기</span>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">미디어 및 구입 항목</span>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <div class="row-text">
+          <div class="row-title">J</div>
+          <div class="row-sub">이 iPhone 15</div>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <div class="row-text">
+          <div class="row-title">iPad Air</div>
+        </div>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 3. WI-FI SCREEN -->
+  <main class="screen" id="screen-wifi">
+    <div class="top-nav">
+      <button class="back-btn" onclick="navBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> 설정</button>
+      <div class="nav-title">Wi-Fi</div>
+      <button class="nav-action">편집</button>
+    </div>
+
+    <div class="group" style="padding:16px; display:flex; align-items:center; gap:16px;">
+      <div class="row-icon" style="background:var(--blue); width:40px; height:40px; border-radius:10px; font-size:22px;">📶</div>
+      <div style="font-size:13px; color:var(--text-muted); line-height:1.4;">
+        Wi-Fi에 연결하고, 사용 가능한 네트워크를 확인하고, 네트워크 연결 및 근처 핫스팟에 대한 설정을 관리할 수 있습니다. <a href="#" style="color:var(--blue); text-decoration:none;">더 알아보기...</a>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">Wi-Fi</span>
+        <div class="switch" id="sw-wifi" onclick="toggleWifi(this, event)"></div>
+      </div>
+    </div>
+
+    <div id="wifi-networks-group" style="display:none;">
+      <div class="group-title">네트워크</div>
+      <div class="group">
+        <div class="row no-icon" onclick="openModal('wifi-other-modal')">
+          <span class="row-title">기타...</span>
+          <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">네트워크 연결 요청</span>
+        <div class="row-right"><span>알림</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">핫스팟 자동 연결</span>
+        <div class="row-right"><span>연결 요청</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+    <div class="group-footer">
+      사용 가능한 Wi-Fi 네트워크가 없을 때 이 기기가 자동으로 근처 개인용 핫스팟을 찾도록 허용합니다.
+    </div>
+  </main>
+
+  <!-- 4. CELLULAR SCREEN -->
+  <main class="screen" id="screen-cellular">
+    <div class="top-nav">
+      <button class="back-btn" onclick="navBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> 설정</button>
+      <div class="nav-title">셀룰러</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="group" style="padding:16px; display:flex; align-items:center; gap:16px;">
+      <div class="row-icon" style="background:var(--green); width:40px; height:40px; border-radius:10px; font-size:22px;">📡</div>
+      <div style="font-size:13px; color:var(--text-muted); line-height:1.4;">
+        데이터 사용량을 확인하고, 데이터 제한을 설정하며, eSIM 및 Wi-Fi 통화 등의 이동통신사 설정을 관리합니다. <a href="#" style="color:var(--blue); text-decoration:none;">더 알아보기...</a>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">셀룰러 데이터</span>
+        <div class="switch on" onclick="toggleSwitch(this, event)"></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">셀룰러 데이터 옵션</span>
+        <div class="row-right"><span>로밍 켬</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon" onclick="navTo('screen-hotspot')">
+        <span class="row-title">개인용 핫스팟</span>
+        <div class="row-right"><span id="cellular-hotspot-status">끔</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+
+    <div class="group-title">KT</div>
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">셀룰러 요금제</span>
+        <div class="row-right"><span>LTE Y 군인 55 Plus</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">네트워크 선택</span>
+        <div class="row-right"><span>KT</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">나의 전화번호</span>
+        <div class="row-right"><span>+82 10-8698-3279</span></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">다른 기기에서의 통화</span>
+        <div class="row-right"><span>근처에 있을 때</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">이동통신사 서비스</span>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">SIM PIN</span>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+
+    <div class="group-title">셀룰러 데이터 앱 사용 내역</div>
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">8 seconds</span>
+        <div class="switch on" onclick="toggleSwitch(this, event)"></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">29CM</span>
+        <div class="switch on" onclick="toggleSwitch(this, event)"></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">1365자원봉사</span>
+        <div class="switch on" onclick="toggleSwitch(this, event)"></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">iCloud Drive</span>
+        <div class="switch on" onclick="toggleSwitch(this, event)"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 5. PERSONAL HOTSPOT SCREEN -->
+  <main class="screen" id="screen-hotspot">
+    <div class="top-nav">
+      <button class="back-btn" onclick="navBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> 설정</button>
+      <div class="nav-title">개인용 핫스팟</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="group" style="padding:16px; display:flex; align-items:center; gap:16px;">
+      <div class="row-icon" style="background:var(--green); width:40px; height:40px; border-radius:10px; font-size:22px;">🔗</div>
+      <div style="font-size:13px; color:var(--text-muted); line-height:1.4;">
+        개인용 핫스팟을 이용하면 사용자 iPhone의 셀룰러 인터넷 연결을 근처에 있는 다른 기기와 공유할 수 있습니다. <a href="#" style="color:var(--blue); text-decoration:none;">더 알아보기...</a>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">다른 사람의 연결 허용</span>
+        <div class="switch" id="sw-hotspot" onclick="toggleHotspot(this, event)"></div>
+      </div>
+      <div class="row no-icon" onclick="openModal('hotspot-pass-modal')">
+        <span class="row-title">Wi-Fi 암호</span>
+        <div class="row-right"><span id="hotspot-pwd-val">11111111</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+    </div>
+    <div class="group-footer">
+      사용자가 설정에서 개인용 핫스팟을 켜거나 제어 센터에서 이 기능을 켜는 경우 iCloud에 로그인하지 않은 다른 사용자 또는 기기가 사용자의 'J' 네트워크를 찾을 수 있습니다.
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">호환성 최대화</span>
+        <div class="switch" onclick="toggleSwitch(this, event)"></div>
+      </div>
+    </div>
+    <div class="group-footer">
+      이 기능을 켜면 핫스팟에 연결된 기기의 인터넷 성능이 저하될 수 있습니다.
+    </div>
+  </main>
+
+  <!-- 6. BATTERY SCREEN -->
+  <main class="screen" id="screen-battery">
+    <div class="top-nav">
+      <button class="back-btn" onclick="navBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> 설정</button>
+      <div class="nav-title">배터리</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="group">
+      <div class="battery-val-box">
+        <div>
+          <div class="battery-pct-big" id="battery-main-val">46%</div>
+          <div class="battery-last-charge">마지막 충전량: 81% (일 21:22)</div>
+        </div>
+        <div class="info-circle">i</div>
+      </div>
+    </div>
+
+    <!-- Chart Block -->
+    <div class="group">
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-main-title">일일 사용 시간</span>
+          <span style="font-size:12px; color:var(--blue); cursor:pointer;" onclick="toggleChartMode(this)">모든 배터리 사용량 보기</span>
+        </div>
+        <div class="chart-sub-note" id="chart-sub-note">오늘 20:16까지 배터리 사용량이 평소보다 줄었습니다.</div>
+
+        <div class="bar-chart">
+          <div class="chart-avg-line"></div>
+          <div class="chart-avg-label">평균</div>
+          <div class="bar-col" onclick="selectDay(this, '월', '66%', '4시간 39분', '43분', 0)">
+            <div class="bar-wrap"><div class="bar-fill blue" style="height: 60%;"></div></div>
+            <div class="bar-label">월</div>
+          </div>
+          <div class="bar-col" onclick="selectDay(this, '화', '123%', '7시간 12분', '1시간 15분', 1)">
+            <div class="bar-wrap"><div class="bar-fill blue" style="height: 95%;"></div></div>
+            <div class="bar-label">화</div>
+          </div>
+          <div class="bar-col" onclick="selectDay(this, '수', '112%', '5시간 30분', '1시간 22분', 2)">
+            <div class="bar-wrap"><div class="bar-fill blue" style="height: 80%;"></div></div>
+            <div class="bar-label">수</div>
+          </div>
+          <div class="bar-col" onclick="selectDay(this, '목', '170%', '14시간 15분', '21분', 3)">
+            <div class="bar-wrap"><div class="bar-fill blue" style="height: 100%;"></div></div>
+            <div class="bar-label">목</div>
+          </div>
+          <div class="bar-col" onclick="selectDay(this, '금', '140%', '10시간 05분', '45분', 4)">
+            <div class="bar-wrap"><div class="bar-fill blue" style="height: 85%;"></div></div>
+            <div class="bar-label">금</div>
+          </div>
+          <div class="bar-col" onclick="selectDay(this, '토', '169%', '13시간 17분', '1시간 10분', 5)">
+            <div class="bar-wrap"><div class="bar-fill orange" style="height: 98%;"></div></div>
+            <div class="bar-label">토</div>
+          </div>
+          <div class="bar-col" onclick="selectDay(this, '일', '78%', '5시간 34분', '31분', 6)">
+            <div class="bar-wrap"><div class="bar-fill blue" style="height: 55%;"></div></div>
+            <div class="bar-label">일</div>
+          </div>
+          <div class="bar-col selected" onclick="selectDay(this, '오늘', '34%', '1시간 30분', '30분', 7)">
+            <div class="bar-wrap"><div class="bar-fill" style="height: 34%;"></div></div>
+            <div class="bar-label">월</div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:12px; color:var(--text-muted);">
+          <span>화면 켜짐: <strong id="screen-on-time" style="color:#fff;">1시간 30분</strong></span>
+          <span>화면 끔: <strong id="screen-off-time" style="color:#fff;">30분</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="group-title">앱 및 시스템 활동</div>
+    <div class="group" id="app-usage-container">
+      <!-- App usage dynamically loaded -->
+    </div>
+
+    <div class="group">
+      <div class="row no-icon">
+        <span class="row-title">배터리 성능 상태</span>
+        <div class="row-right"><span>정상</span><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">충전</span>
+        <div class="row-right"><svg class="chevron" viewBox="0 0 8 13"><path d="M1 1l5 5.5L1 12"/></svg></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">배터리 잔량 표시(%)</span>
+        <div class="switch on" id="sw-battery-pct" onclick="toggleBatteryPct(this, event)"></div>
+      </div>
+      <div class="row no-icon">
+        <span class="row-title">저전력 모드</span>
+        <div class="switch" id="sw-low-power" onclick="toggleLowPower(this, event)"></div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- MODAL OVERLAYS -->
+<div class="modal-overlay" id="wifi-other-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span>기타 네트워크</span>
+      <button class="modal-btn" onclick="closeModal('wifi-other-modal')">취소</button>
+    </div>
+    <input type="text" class="modal-input" placeholder="이름 (SSID)"/>
+    <button class="modal-btn" style="width:100%; text-align:center; padding:12px; background:var(--blue); color:#fff; border-radius:10px;" onclick="closeModal('wifi-other-modal')">연결</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="hotspot-pass-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span>Wi-Fi 암호</span>
+      <button class="modal-btn" onclick="saveHotspotPass()">완료</button>
+    </div>
+    <input type="text" id="hotspot-input-pwd" class="modal-input" value="11111111"/>
+  </div>
+</div>
+
+<script>
+let screenStack = ['screen-home'];
+
+const dayAppData = [
+  // 월 (Index 0)
+  [
+    { name: 'Instagram', sub: '화면 실행: 56분 | 백그라운드: 29분', pct: '19%', color: '#e1306c', icon: '📷' },
+    { name: 'YouTube', sub: '화면 실행: 1시간 51분 | 백그라운드: 1분', pct: '17%', color: '#ff0000', icon: '▶' },
+    { name: '토스', sub: '화면 실행: 25분 | 백그라운드: 28분', pct: '9%', color: '#0064ff', icon: 't' },
+    { name: 'Google', sub: '화면 실행: 15분', pct: '8%', color: '#4285f4', icon: 'G' }
+  ],
+  // 화 (Index 1)
+  [
+    { name: 'Instagram', sub: '백그라운드 활동이 18분 더 오래 지속됨', pct: '42%', color: '#e1306c', icon: '📷', warn: true },
+    { name: 'YouTube', sub: '화면 실행이 50분 늘어남', pct: '29%', color: '#ff0000', icon: '▶' },
+    { name: '네이버지도', sub: '화면 실행이 29분 늘어남', pct: '16%', color: '#03cf5d', icon: 'N' }
+  ],
+  // 수 (Index 2)
+  [
+    { name: 'Instagram', sub: '화면 실행: 1시간 41분 | 백그라운드: 54분', pct: '47%', color: '#e1306c', icon: '📷' },
+    { name: 'YouTube', sub: '화면 실행: 1시간 33분', pct: '24%', color: '#ff0000', icon: '▶' }
+  ],
+  // 목 (Index 3)
+  [
+    { name: 'Instagram', sub: '화면 실행이 3시간 19분 늘어남', pct: '78%', color: '#e1306c', icon: '📷', warn: true },
+    { name: 'YouTube', sub: '화면 실행: 2시간 15분', pct: '15%', color: '#ff0000', icon: '▶' }
+  ],
+  // 금 (Index 4)
+  [
+    { name: 'Instagram', sub: '화면 실행: 2시간 10분', pct: '35%', color: '#e1306c', icon: '📷' },
+    { name: '지니뮤직', sub: '백그라운드 실행: 1시간 20분', pct: '20%', color: '#1ec800', icon: '🎵' }
+  ],
+  // 토 (Index 5)
+  [
+    { name: 'Instagram', sub: '화면 실행이 7시간 30분 늘어남', pct: '105%', color: '#e1306c', icon: '📷', warn: true },
+    { name: 'YouTube', sub: '화면 실행: 1시간 14분', pct: '16%', color: '#ff0000', icon: '▶' }
+  ],
+  // 일 (Index 6)
+  [
+    { name: 'Instagram', sub: '화면 실행: 1시간 20분', pct: '30%', color: '#e1306c', icon: '📷' },
+    { name: '카카오톡', sub: '화면 실행: 45분', pct: '18%', color: '#fee500', icon: '💬' }
+  ],
+  // 오늘 (Index 7)
+  [
+    { name: 'Instagram', sub: '화면 실행: 4분 | 백그라운드: 8분', pct: '25%', color: '#e1306c', icon: '📷' },
+    { name: '지니뮤직', sub: '화면 실행: 1분 | 백그라운드: 18분', pct: '3%', color: '#1ec800', icon: '🎵' },
+    { name: 'App Store', sub: '화면 실행: 10분', pct: '1%', color: '#007aff', icon: 'A' }
+  ]
+];
+
+function navTo(screenId) {
+  const current = document.querySelector('.screen.active');
+  const target = document.getElementById(screenId);
+  if (target && current !== target) {
+    current.classList.remove('active');
+    target.classList.add('active');
+    screenStack.push(screenId);
+    window.scrollTo(0, 0);
+  }
+}
+
+function navBack() {
+  if (screenStack.length > 1) {
+    const currentId = screenStack.pop();
+    const prevId = screenStack[screenStack.length - 1];
+    document.getElementById(currentId).classList.remove('active');
+    document.getElementById(prevId).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+}
+
+function toggleSwitch(el, event) {
+  if (event) event.stopPropagation();
+  el.classList.toggle('on');
+}
+
+function toggleWifi(el, event) {
+  toggleSwitch(el, event);
+  const isOn = el.classList.contains('on');
+  document.getElementById('home-wifi-status').innerText = isOn ? 'iptime_secure' : '연결 안 됨';
+  document.getElementById('wifi-networks-group').style.display = isOn ? 'block' : 'none';
+}
+
+function toggleHotspot(el, event) {
+  toggleSwitch(el, event);
+  const isOn = el.classList.contains('on');
+  const txt = isOn ? '켬' : '끔';
+  document.getElementById('home-hotspot-status').innerText = txt;
+  document.getElementById('cellular-hotspot-status').innerText = txt;
+}
+
+function toggleBatteryPct(el, event) {
+  toggleSwitch(el, event);
+  const isOn = el.classList.contains('on');
+  document.getElementById('status-battery-pct').style.display = isOn ? 'inline' : 'none';
+}
+
+function toggleLowPower(el, event) {
+  toggleSwitch(el, event);
+  const isOn = el.classList.contains('on');
+  const fill = document.getElementById('status-battery-fill');
+  const mainVal = document.getElementById('battery-main-val');
+  if (isOn) {
+    fill.classList.add('low-power');
+  } else {
+    fill.classList.remove('low-power');
+  }
+}
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+function saveHotspotPass() {
+  const val = document.getElementById('hotspot-input-pwd').value || '11111111';
+  document.getElementById('hotspot-pwd-val').innerText = val;
+  closeModal('hotspot-pass-modal');
+}
+
+function renderAppList(apps) {
+  const container = document.getElementById('app-usage-container');
+  container.innerHTML = apps.map(a => `
+    <div class="app-item">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="app-icon" style="background:${a.color};">${a.icon}</div>
+        <div class="app-info">
+          <div class="app-name">${a.name}</div>
+          <div class="app-sub">${a.sub}</div>
+        </div>
+      </div>
+      <div class="app-pct ${a.warn ? 'warning' : ''}">${a.warn ? '⚠️ ' : ''}${a.pct}</div>
+    </div>
+  `).join('');
+}
+
+function selectDay(col, dayName, usagePct, screenOn, screenOff, dayIdx) {
+  document.querySelectorAll('.bar-col').forEach(c => c.classList.remove('selected'));
+  col.classList.add('selected');
+  document.getElementById('chart-sub-note').innerText = `${dayName}요일 배터리 사용량이 ${usagePct}입니다.`;
+  document.getElementById('screen-on-time').innerText = screenOn;
+  document.getElementById('screen-off-time').innerText = screenOff;
+  renderAppList(dayAppData[dayIdx] || dayAppData[7]);
+}
+
+// Initial App List Render
+renderAppList(dayAppData[7]);
+</script>
+</body>
+</html>
